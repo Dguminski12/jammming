@@ -1,9 +1,11 @@
+import styles from "./Track.module.css";
+
 export default function Track({ track }) {
     return (
-        <div>
-            <div><strong>{track.name}</strong></div>
+        <div className={styles.row}>
+            <div className={styles.title}>{track.name}</div>
             <div>{track.artist}</div>
-            <div>{track.album}</div>    
+            <div className={styles.album}>{track.album}</div>    
         </div>
     )
 }

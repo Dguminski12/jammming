@@ -1,4 +1,6 @@
 import { useState } from "react";
+import Track from "./components/Track.jsx";
+import TrackList from "./components/Tracklist.jsx";
 
 export default function App() {
   const [searchResults, setSearchResults] = useState([
@@ -11,13 +13,7 @@ export default function App() {
       <h1>Jammming</h1>
       <p>Search Spotify, build a playlist, save to your account.</p>
       <div id="trackListDiv">
-        <ul>
-          {searchResults.map((track) => (
-            <li key={track.id}>
-              {track.name} - {track.artist} ({track.album})
-            </li>
-          ))}
-        </ul>
+        <TrackList tracks={searchResults} />
       </div>
       <button id="saveBtn">Save to Spotify</button>
       <button id="searchBtn">Search</button>
