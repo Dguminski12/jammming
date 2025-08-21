@@ -1,7 +1,7 @@
 import Track from "./Track.jsx";
 import styles from "./Tracklist.module.css";
 
-export default function TrackList({ tracks }) {
+export default function Tracklist({ tracks, onAdd, onRemove, isRemoval = false }) {
     if (!tracks?.length) return <p className={styles.empty}>No results yet.</p>;
 
     return (
@@ -9,12 +9,19 @@ export default function TrackList({ tracks }) {
             <div className={styles.header}>
                 <div>Title</div>
                 <div>Artist</div>
-                <div>Album</div>    
+                <div>Album</div>
+                <div></div>    
             </div>
 
-            {tracks.map((t) => {
-                return <Track key={t.id} track={t} />
-            })}
+            {tracks.map((t) => ( 
+                <Track 
+                key={t.id}
+                track={t}
+                onAdd={onAdd}
+                onRemove={onRemove}
+                isRemoval={isRemoval}
+                />
+            ))}
         </div>
     );
 }

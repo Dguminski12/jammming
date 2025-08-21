@@ -1,6 +1,6 @@
 .row {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-columns: 2fr 1fr 1fr auto;
     gap: 8px;
     padding: 6px 0;
     border-bottom: 1px solid #ccc;
@@ -16,4 +16,12 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.addBtn {
+  border: 1px solid #2d2d2d;
+  border-radius: 6px;
+  padding: 2px 8px;
+  background: transparent;
+  cursor: pointer;
 }
