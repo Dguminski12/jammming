@@ -1,6 +1,16 @@
 const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
 const REDIRECT_URI = import.meta.env.VITE_SPOTIFY_REDIRECT_URI;
 const SCOPES = ["playlist-modify-public", "playlist-modify-private"];
+let accessToken = null;
+let expiresAt = 0;
+
+//temp logging
+console.log("[auth] env", {
+  CLIENT_ID: import.meta.env.VITE_SPOTIFY_CLIENT_ID,
+  REDIRECT_URI: import.meta.env.VITE_SPOTIFY_REDIRECT_URI,
+  origin: window.location.origin
+});
+
 
 function randomString(len = 64) {
   const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -23,6 +33,7 @@ async function sha256(text) {
 }
 
 async function startAuth() {
+  console.log("[auth] starting redirect to Spotify…");
   const verifier = randomString(64);
   const state = randomString(16);
 
@@ -49,7 +60,7 @@ async function fetchAccessToken(code) {
     const verifier = sessionStorage.getItem("spotify_pkce_verifier");
     const url = "https://accounts.spotify.com/api/token";
 
-    const payload = {
+    const payload = await fetch(url,{
         method: "POST",
         headers: {
             "Content-Type": "application/x-www-form-urlencoded"
@@ -61,22 +72,31 @@ async function fetchAccessToken(code) {
             redirect_uri: REDIRECT_URI,
             code_verifier: verifier
         })
-    }
-    const body = await fetch(url, payload);
-    const response = await body.json();
+    });
 
-    localStorage.setItem('access_token', response.access_token);
+    const data = await payload.json();
+    accessToken = data.access_token;
+    const expiresIn = Number(data.expires_in || 3600);
+    expiresAt = Date.now() + expiresIn * 1000;
+    localStorage.setItem('access_token', accessToken);
+    localStorage.setItem('expires_at', String(expiresAt));
+
+    // remove ?code=... from the URL bar
+    window.history.replaceState({}, "", window.location.pathname);
+
+    return accessToken;
 }
 
-let accessToken = null;
-let expiresAt = 0;
-
 export async function getAccessToken() {
-    if (accessToken && Date.now() < expiresAt) return accessToken;
+    if (accessToken && Date.now() < expiresAt){
+        console.log("[auth] cache hit");
+        return accessToken;
+    }
     
     const stored = localStorage.getItem('access_token');
-    const storedExpiry = localStorage.getItem('expires_at');
+    const storedExpiry = Number(localStorage.getItem('expires_at'));
     if (stored && storedExpiry && Date.now() < storedExpiry) {
+        console.log("[auth] localStorage hit");
         accessToken = stored;
         expiresAt = storedExpiry;
         return accessToken;
@@ -86,21 +106,29 @@ export async function getAccessToken() {
     const code = params.get("code");
     if (code) {
         console.log("Authorization code:", code);
-        return null;
+        return await fetchAccessToken(code);
     }
     await startAuth();
     console.log("getAccessToken called", { CLIENT_ID, REDIRECT_URI });
     return null;
 }
 
-export async function spotifyfetch(accessToken) {
-  let token = await getAccessToken();
+export async function spotifyFetch(endpoint, init = {}) {
+  const token = await getAccessToken();
 
-  const response = await fetch('https://api.spotify.com/v1/me', {
+  const res = await fetch(`https://api.spotify.com/v1/${endpoint}`, {
+    ...init,
     headers: {
-      Authorization: 'Bearer ' + accessToken
+      ...(init.headers || {}),
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
     }
   });
 
-  const data = await response.json();
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`${res.status} ${res.statusText}: ${text}`);
+  }
+
+  return res.json();
 }
