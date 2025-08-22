@@ -45,8 +45,18 @@ async function startAuth() {
   window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
 }
 
+let accessToken = null;
+let expiresAt = 0;
 
-export async function getAccesstoken() {
+export async function getAccessToken() {
+    if (accessToken && Date.now() < expiresAt) return accessToken;
+    
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("code");
+    if (code) {
+        console.log("Authorization code:", code);
+        return null;
+    }
     await startAuth();
     console.log("getAccessToken called", { CLIENT_ID, REDIRECT_URI });
     return null;
