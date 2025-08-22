@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Tracklist from "./components/Tracklist.jsx";
 import Playlist from "./components/Playlist.jsx";
+import { getAccessToken } from "./lib/spotifyAuth.js";
 
 export default function App() {
   //Sample search result data
@@ -33,6 +34,14 @@ export default function App() {
     <main style={{ padding: 24, fontFamily: "system-ui, sans-serif" }}>
       <h1>Jammming</h1>
       <p>Search Spotify, build a playlist, save to your account.</p>
+
+      <button onClick= {async () => {
+        const token = await getAccessToken();
+        console.log("Access Token:", token);
+      }}>
+        Connect Spotify
+        </button>
+
       <div id="trackListDiv">
         <h1>Results</h1>
         <Tracklist tracks={searchResults} onAdd={addTrack} />
@@ -47,6 +56,7 @@ export default function App() {
             onSave={savePlaylist}
         />        
       </div>
+      
       <button id="searchBtn">Search</button>
     </main>
   );
