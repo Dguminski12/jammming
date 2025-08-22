@@ -45,12 +45,43 @@ async function startAuth() {
   window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
 }
 
+async function fetchAccessToken(code) {
+    const verifier = sessionStorage.getItem("spotify_pkce_verifier");
+    const url = "https://accounts.spotify.com/api/token";
+
+    const payload = {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({
+            client_id: CLIENT_ID,
+            grant_type: "authorization_code",
+            code,
+            redirect_uri: REDIRECT_URI,
+            code_verifier: verifier
+        })
+    }
+    const body = await fetch(url, payload);
+    const response = await body.json();
+
+    localStorage.setItem('access_token', response.access_token);
+}
+
 let accessToken = null;
 let expiresAt = 0;
 
 export async function getAccessToken() {
     if (accessToken && Date.now() < expiresAt) return accessToken;
     
+    const stored = localStorage.getItem('access_token');
+    const storedExpiry = localStorage.getItem('expires_at');
+    if (stored && storedExpiry && Date.now() < storedExpiry) {
+        accessToken = stored;
+        expiresAt = storedExpiry;
+        return accessToken;
+    }
+
     const params = new URLSearchParams(window.location.search);
     const code = params.get("code");
     if (code) {
@@ -60,4 +91,16 @@ export async function getAccessToken() {
     await startAuth();
     console.log("getAccessToken called", { CLIENT_ID, REDIRECT_URI });
     return null;
+}
+
+export async function spotifyfetch(accessToken) {
+  let token = await getAccessToken();
+
+  const response = await fetch('https://api.spotify.com/v1/me', {
+    headers: {
+      Authorization: 'Bearer ' + accessToken
+    }
+  });
+
+  const data = await response.json();
 }
