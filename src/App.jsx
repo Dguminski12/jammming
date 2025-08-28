@@ -32,6 +32,26 @@ export default function App() {
     alert(`(Mock) Saved ${playlistName} with ${playlistTracks.length} tracks.`);
   }
 
+  async function handleSearch() {
+    const q = term.trim();
+    if (!q) return;
+
+    try {
+      const data = await spotifyFetch(`search?type=track&q=${encodeURIComponent(q)}&type=track&limit=10`);
+      const items = data.tracks?.items ?? [];
+      const results = items.map(t => ({
+        id: t.id,
+        name: t.name,
+        artist: t.artists?.[0]?.name ?? "Unknown Artist",
+        album: t.album?.name ?? "Unknown Album"
+      }));
+    setSearchResults(results);
+    console.log(`Got ${results.length} tracks foor "${q}"`, results);
+    } catch (err) {
+      console.error("Error searching tracks:", err);
+    };
+  };
+
   return (
     <main style={{ padding: 24, fontFamily: "system-ui, sans-serif" }}>
       <h1>Jammming</h1>
