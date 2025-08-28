@@ -1,6 +1,6 @@
 import Tracklist from "./Tracklist.jsx";
 
-export default function Playlist({ playlistName, onNameChange, tracks, onSave, onRemove, isRemoval = false }) {
+export default function Playlist({ playlistName, onNameChange, tracks, onSave, onRemove, isRemoval = false, isSaving = false }) {
   return (
     <div>
         <h2>Playlist</h2>
@@ -12,7 +12,9 @@ export default function Playlist({ playlistName, onNameChange, tracks, onSave, o
         />
         <Tracklist tracks={tracks} onRemove={onRemove} isRemoval />
 
-        <button onClick={onSave} disabled={!tracks.length}>Save to Spotify</button>
+        <button onClick={onSave} disabled={!tracks.length || isSaving}>
+          {isSaving ? "Saving..." : "Save to Spotify"}
+          </button>
         
     </div>
   );

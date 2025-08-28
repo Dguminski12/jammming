@@ -16,6 +16,7 @@ export default function App() {
   const [playlistTracks, setPlaylistTracks] = useState([
     { id: 99, name: "Seed song", artist: "Seed artist", album: "Seed album", uri: "spotify:track:3n3Ppam7vgaVa1iaRUc9Lp" }]);
   const [term, setTerm] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
 // Function to add or remove tracks from the playlist
   function addTrack(track) {
@@ -31,23 +32,50 @@ export default function App() {
 }
 
 //Function to save the playlist
-  function savePlaylist() {
+  async function savePlaylist() {
     //Collect URIs of tracks to save
     const uris = playlistTracks.map(t => t.uri).filter(Boolean);
+    if (!uris.length) {
+      alert("Your playlist is empty!");
+      return;
+    }
+    
+    setIsSaving(true);
+    try {
+      //Determine user ID
+      const me = await spotifyFetch("me");
+      const userId = me.id;
 
-    //mock save
-    console.log("Saving playlist",
-      {name: playlistName,
-        uris,
-        count: uris.length
+      //Create the playlist
+      const playlist = await spotifyFetch(`users/${userId}/playlists`, {
+        method: "POST",
+        body: JSON.stringify({
+          name: playlistName || "New Playlist",
+          public: false,
+          description: "Created with Jammming"
+        })
+    });
+    const playlistId = playlist.id;
+    
+    //Add tracks to the playlist
+    for (let i = 0; i < uris.length; i += 100) {
+      const chunk = uris.slice(i, i + 100);
+      await spotifyFetch(`playlists/${playlistId}/tracks`, {
+        method: "POST",
+        body: JSON.stringify({ uris: chunk })
       });
-      alert(`(mock) Savesd ${playlistName} with ${uris.length} tracks to Spotify!`);
-
+    }
     //Reset playlist
+    alert(`Saved playlist "${playlistName}" with ${uris.length} tracks to your Spotify account!`);
     setPlaylistName("New Playlist");
     setPlaylistTracks([]);
+  } catch (err) {
+    console.error("Error saving playlist:", err);
+  } finally {
+    setIsSaving(false);
   }
-
+  }
+  
   async function handleSearch() {
     const q = term.trim();
     if (!q) return;
@@ -98,6 +126,7 @@ export default function App() {
             tracks={playlistTracks}
             onRemove={removeTrack}
             onSave={savePlaylist}
+            isSaving={isSaving}
         />        
       </div>
       
