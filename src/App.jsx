@@ -14,14 +14,17 @@ export default function App() {
   //Sample Playlist data
   const [playlistName, setPlaylistName] = useState("My Playlist");
   const [playlistTracks, setPlaylistTracks] = useState([
-    { id: 99, name: "Seed song", artist: "Seed artist", album: "Seed album" }]);
+    { id: 99, name: "Seed song", artist: "Seed artist", album: "Seed album", uri: "spotify:track:3n3Ppam7vgaVa1iaRUc9Lp" }]);
   const [term, setTerm] = useState("");
 
 // Function to add or remove tracks from the playlist
   function addTrack(track) {
-    setPlaylistTracks((prev) =>
-    prev.some((t) => t.id === track.id) ? prev : [...prev, track]);
-  }
+  setPlaylistTracks(prev => {
+    if (prev.some(t => t.id === track.id)) return prev;
+    const withUri = track.uri ? track : { ...track, uri: `spotify:track:${track.id}` }; // fallback for mock items
+    return [...prev, withUri];
+  });
+}
 
   function removeTrack(track) {
   setPlaylistTracks((prev) => prev.filter((t) => t.id !== track.id));
@@ -29,7 +32,20 @@ export default function App() {
 
 //Function to save the playlist
   function savePlaylist() {
-    alert(`(Mock) Saved ${playlistName} with ${playlistTracks.length} tracks.`);
+    //Collect URIs of tracks to save
+    const uris = playlistTracks.map(t => t.uri).filter(Boolean);
+
+    //mock save
+    console.log("Saving playlist",
+      {name: playlistName,
+        uris,
+        count: uris.length
+      });
+      alert(`(mock) Savesd ${playlistName} with ${uris.length} tracks to Spotify!`);
+
+    //Reset playlist
+    setPlaylistName("New Playlist");
+    setPlaylistTracks([]);
   }
 
   async function handleSearch() {
@@ -43,7 +59,8 @@ export default function App() {
         id: t.id,
         name: t.name,
         artist: t.artists?.[0]?.name ?? "Unknown Artist",
-        album: t.album?.name ?? "Unknown Album"
+        album: t.album?.name ?? "Unknown Album",
+        uri: t.uri,
       }));
     setSearchResults(results);
     console.log(`Got ${results.length} tracks foor "${q}"`, results);
