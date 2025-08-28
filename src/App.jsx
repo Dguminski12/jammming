@@ -2,6 +2,7 @@ import { useState } from "react";
 import Tracklist from "./components/Tracklist.jsx";
 import Playlist from "./components/Playlist.jsx";
 import { getAccessToken } from "./lib/spotifyAuth.js";
+import { spotifyFetch } from "./lib/spotifyAuth.js";
 
 export default function App() {
   //Sample search result data
@@ -13,8 +14,9 @@ export default function App() {
   //Sample Playlist data
   const [playlistName, setPlaylistName] = useState("My Playlist");
   const [playlistTracks, setPlaylistTracks] = useState([
-    { id: 99, name: "Seed song", artist: "Seed artist", album: "Seed album" }
-  ]);
+    { id: 99, name: "Seed song", artist: "Seed artist", album: "Seed album" }]);
+  const [term, setTerm] = useState("");
+
 // Function to add or remove tracks from the playlist
   function addTrack(track) {
     setPlaylistTracks((prev) =>
@@ -41,6 +43,11 @@ export default function App() {
       }}>
         Connect Spotify
         </button>
+
+      <div>
+        <input value={term} onChange={(e) => setTerm(e.target.value)} placeholder="Search songs or artists..." />
+        <button type="button" onClick={handleSearch}>Search</button>
+      </div>
 
       <div id="trackListDiv">
         <h1>Results</h1>
