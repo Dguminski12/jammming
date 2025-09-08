@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Tracklist from "./components/Tracklist.jsx";
 import Playlist from "./components/Playlist.jsx";
 import { getAccessToken } from "./lib/spotifyAuth.js";
@@ -6,17 +6,45 @@ import { spotifyFetch } from "./lib/spotifyAuth.js";
 
 export default function App() {
   //Sample search result data
-  const [searchResults, setSearchResults] = useState([
-    { id: 1, name: "Song A", artist: "Artist A", album: "Album A" },
-    { id: 2, name: "Song B", artist: "Artist B", album: "Album B" },
-    { id: 3, name: "Song C", artist: "Artist C", album: "Album C" }
-  ]);
+  const [searchResults, setSearchResults] = useState([]);
   //Sample Playlist data
   const [playlistName, setPlaylistName] = useState("My Playlist");
-  const [playlistTracks, setPlaylistTracks] = useState([
-    { id: 99, name: "Seed song", artist: "Seed artist", album: "Seed album", uri: "spotify:track:3n3Ppam7vgaVa1iaRUc9Lp" }]);
+  const [playlistTracks, setPlaylistTracks] = useState([]);
   const [term, setTerm] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+
+  //Audio ref for track previews
+  const audioRef = useRef(null);
+  const [playingId, setPlayingId] = useState(null);
+
+  useEffect(() => {
+    if (!audioRef.current) audioRef.current = new Audio();
+    const onEnded = () => setPlayingId(null);
+    audioRef.current.addEventListener("ended", onEnded);
+    return () => audioRef.current?.removeEventListener("ended", onEnded);
+  }, []);
+
+  function togglePreview(track) {
+    if (!track.previewUrl) return;
+    const audio  = audioRef.current ?? (audioRef.current = new Audio());
+
+    if (playingId === track.id) {
+      audio.pause();
+      setPlayingId(null);
+      return;
+    }
+
+    try {
+      audio.pause();
+      audio.src = track.previewUrl;
+      audio.currentTime = 0;
+      audio.play()
+        .then(() => setPlayingId(track.id))
+        .catch(err => {console.log("Error playing preview:", err); setPlayingId(null);});
+    } catch (err) {
+      console.error("Error with audio playback:", err);
+    }
+  }
 
 // Function to add or remove tracks from the playlist
   function addTrack(track) {
@@ -81,7 +109,7 @@ export default function App() {
     if (!q) return;
 
     try {
-      const data = await spotifyFetch(`search?type=track&q=${encodeURIComponent(q)}&type=track&limit=10`);
+      const data = await spotifyFetch(`search?type=track&q=${encodeURIComponent(q)}&type=track&market=from_token&limit=20`);
       const items = data.tracks?.items ?? [];
       const results = items.map(t => ({
         id: t.id,
@@ -89,6 +117,7 @@ export default function App() {
         artist: t.artists?.[0]?.name ?? "Unknown Artist",
         album: t.album?.name ?? "Unknown Album",
         uri: t.uri,
+        previewUrl: t.preview_url,
       }));
     setSearchResults(results);
     console.log(`Got ${results.length} tracks foor "${q}"`, results);
@@ -124,7 +153,11 @@ export default function App() {
         <div className="grid">
           <div className="panel">
             <h2>Results</h2>
-            <Tracklist tracks={searchResults} onAdd={addTrack} />
+            <Tracklist 
+              tracks={searchResults}
+              onAdd={addTrack}
+              onPreview={togglePreview}
+              playingId={playingId} />
           </div>
           <div className="panel">
             <Playlist
