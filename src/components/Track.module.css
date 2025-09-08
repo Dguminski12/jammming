@@ -1,27 +1,31 @@
-.row {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr auto;
-    gap: 8px;
-    padding: 6px 0;
-    border-bottom: 1px solid #ccc;
+.row{
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr auto;
+  gap: 8px;
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--border, #2d2d2d);
 }
-
-.title {
-    font-weight: 600;
-
-}
-
-.album {
-    color: #666;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.addBtn {
-  border: 1px solid #2d2d2d;
-  border-radius: 6px;
-  padding: 2px 8px;
-  background: transparent;
+.row:hover{ background: rgba(255,255,255,0.04); border-radius: 8px; }
+.title{ font-weight: 600; }
+.album{ color: var(--muted, #9aa0a6); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.actionBtn {
+  background: var(--green, #1DB954);
+  color: #0b0b0b;
+  border: none;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  font-size: 1.4rem;
+  font-weight: bold;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px 0 rgba(29,185,84,0.10);
+  transition: background 0.2s, transform 0.1s;
+}
+.actionBtn:hover {
+  background: var(--green-600, #169c46);
+  color: #fff;
+  transform: scale(1.08);
 }

@@ -6,13 +6,14 @@ export default function Playlist({ playlistName, onNameChange, tracks, onSave, o
         <h2>Playlist</h2>
 
         <input
+            className="playlist-name-input"
             value={playlistName}
             onChange={(e) => onNameChange(e.target.value)}
             placeholder="New Playlist Name"
         />
         <Tracklist tracks={tracks} onRemove={onRemove} isRemoval />
 
-        <button onClick={onSave} disabled={!tracks.length || isSaving}>
+        <button className="save-btn" onClick={onSave} disabled={!tracks.length || isSaving}>
           {isSaving ? "Saving..." : "Save to Spotify"}
           </button>
         

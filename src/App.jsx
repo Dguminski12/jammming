@@ -98,39 +98,46 @@ export default function App() {
   };
 
   return (
-    <main style={{ padding: 24, fontFamily: "system-ui, sans-serif" }}>
-      <h1>Jammming</h1>
-      <p>Search Spotify, build a playlist, save to your account.</p>
+    <div className="app">
+      <main className="container">
+        <h1 className="title">Jammming</h1>
+        <p className="subtitle">Search Spotify, build a playlist, save to your account.</p>
 
-      <button onClick= {async () => {
-        const token = await getAccessToken();
-        console.log("Access Token:", token);
-      }}>
-        Connect Spotify
-        </button>
+        <div className="actions">
+          <button className="button" onClick={async () => {
+            const token = await getAccessToken();
+            console.log("Access Token:", token);
+          }}>
+            Connect Spotify
+          </button>
+          <form className="search-form" onSubmit={e => { e.preventDefault(); handleSearch(); }}>
+            <input
+              className="input"
+              value={term}
+              onChange={e => setTerm(e.target.value)}
+              placeholder="Search songs or artists..."
+            />
+            <button className="button" type="submit">Search</button>
+          </form>
+        </div>
 
-      <div>
-        <input value={term} onChange={(e) => setTerm(e.target.value)} placeholder="Search songs or artists..." />
-        <button type="button" onClick={handleSearch}>Search</button>
-      </div>
-
-      <div id="trackListDiv">
-        <h1>Results</h1>
-        <Tracklist tracks={searchResults} onAdd={addTrack} />
-      </div>
-
-      <div id="playlistDiv">
-        <Playlist
-            playlistName={playlistName}
-            onNameChange={setPlaylistName}
-            tracks={playlistTracks}
-            onRemove={removeTrack}
-            onSave={savePlaylist}
-            isSaving={isSaving}
-        />        
-      </div>
-      
-      <button id="searchBtn">Search</button>
-    </main>
+        <div className="grid">
+          <div className="panel">
+            <h2>Results</h2>
+            <Tracklist tracks={searchResults} onAdd={addTrack} />
+          </div>
+          <div className="panel">
+            <Playlist
+              playlistName={playlistName}
+              onNameChange={setPlaylistName}
+              tracks={playlistTracks}
+              onRemove={removeTrack}
+              onSave={savePlaylist}
+              isSaving={isSaving}
+            />
+          </div>
+        </div>
+      </main>
+    </div>
   );
 }

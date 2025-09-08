@@ -8,10 +8,10 @@ export default function Track({ track, onAdd, onRemove, isRemoval = false }) {
             <div className={styles.album}>{track.album}</div>    
 
             {onAdd && !isRemoval && (
-                <button className={styles.addBtn} onClick={() => onAdd(track)}>+</button>
+                <button className={styles.actionBtn} onClick={() => onAdd(track)}>+</button>
             )}
             {onRemove && isRemoval && (
-                <button className={styles.addBtn} onClick={() => onRemove(track)}>-</button>
+                <button className={styles.actionBtn} onClick={() => onRemove(track)}>-</button>
             )}
         </div>
     )
